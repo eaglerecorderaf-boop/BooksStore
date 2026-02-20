@@ -53,7 +53,7 @@ const App: React.FC = () => {
       try {
         setIsLoading(true);
         
-        const fetchWithRetry = async <T>(fetchFn: () => Promise<T>, fallback: T, label: string): Promise<T> => {
+        const fetchWithRetry = async <T extends unknown>(fetchFn: () => Promise<T>, fallback: T, label: string): Promise<T> => {
           try {
             return await fetchFn();
           } catch (err) {
