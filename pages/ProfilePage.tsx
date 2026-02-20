@@ -121,10 +121,28 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
                         <p className="text-xs text-slate-400 mb-1">شماره سفارش: <span className="font-mono text-slate-800">#{order.id.slice(0, 8)}</span></p>
                         <p className="text-xs text-slate-400">تاریخ: {new Date(order.createdAt).toLocaleDateString('fa-IR')}</p>
                       </div>
-                      <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">
-                        {order.status}
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
+                          order.status === OrderStatus.REJECTED ? 'bg-red-100 text-red-700' :
+                          order.status === OrderStatus.VERIFYING_PAYMENT ? 'bg-blue-100 text-blue-700' :
+                          'bg-amber-100 text-amber-700'
+                        }`}>
+                          {order.status}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {order.paymentMethod === 'online' ? '💳 پرداخت آنلاین' : '🏦 کارت به کارت'}
+                        </span>
+                      </div>
                     </div>
+
+                    {order.adminNote && (
+                      <div className={`mb-6 p-4 rounded-2xl text-xs leading-relaxed ${
+                        order.status === OrderStatus.REJECTED ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-slate-50 text-slate-600 border border-slate-100'
+                      }`}>
+                        <span className="font-bold block mb-1">پیام سیستم/مدیریت:</span>
+                        {order.adminNote}
+                      </div>
+                    )}
                     
                     <div className="flex gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
                       {order.items.map(item => (

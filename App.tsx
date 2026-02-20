@@ -18,6 +18,7 @@ import AdminBooks from './pages/AdminBooks';
 import AdminOrders from './pages/AdminOrders';
 import AdminUsers from './pages/AdminUsers';
 import AdminCoupons from './pages/AdminCoupons';
+import AdminSettings from './pages/AdminSettings';
 import AdminAuthWrapper from './components/AdminAuthWrapper';
 
 // Informational Pages
@@ -42,6 +43,7 @@ const App: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>(storage.getOrders());
   const [users, setUsers] = useState<User[]>(storage.getUsers());
   const [coupons, setCoupons] = useState<any[]>(storage.getCoupons());
+  const [paymentSettings, setPaymentSettings] = useState<any>(storage.getPaymentSettings());
 
   useEffect(() => {
     storage.saveCart(cart);
@@ -137,6 +139,7 @@ const App: React.FC = () => {
                       <Link to="/admin/orders" className="hover:text-amber-500">سفارشات</Link>
                       <Link to="/admin/users" className="hover:text-amber-500">کاربران</Link>
                       <Link to="/admin/coupons" className="hover:text-amber-500">تخفیف‌ها</Link>
+                      <Link to="/admin/settings" className="hover:text-amber-500">تنظیمات</Link>
                       <button 
                         onClick={() => {
                           sessionStorage.removeItem('admin_auth');
@@ -156,6 +159,7 @@ const App: React.FC = () => {
                     <Route path="/orders" element={<AdminOrders orders={orders} onUpdateOrders={(updated) => {setOrders(updated); storage.saveOrders(updated);}} />} />
                     <Route path="/users" element={<AdminUsers users={users} onUpdateUsers={(updated) => {setUsers(updated); storage.saveUsers(updated);}} />} />
                     <Route path="/coupons" element={<AdminCoupons coupons={coupons} onUpdateCoupons={(updated) => {setCoupons(updated); storage.saveCoupons(updated);}} />} />
+                    <Route path="/settings" element={<AdminSettings settings={paymentSettings} onUpdateSettings={(updated) => {setPaymentSettings(updated); storage.savePaymentSettings(updated);}} />} />
                   </Routes>
                 </main>
               </div>
@@ -176,7 +180,7 @@ const App: React.FC = () => {
                   <Route path="/books" element={<BookListPage books={books} categories={categories} />} />
                   <Route path="/book/:slug" element={<BookDetailPage books={books} onAddToCart={addToCart} onToggleFavorite={handleToggleFavorite} favorites={currentUser?.favorites || []} />} />
                   <Route path="/cart" element={<CartPage cart={cart} onUpdateQty={updateCartQuantity} onRemove={removeFromCart} />} />
-                  <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} coupons={coupons} />} />
+                  <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} coupons={coupons} paymentSettings={paymentSettings} />} />
                   <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
                   <Route path="/signup" element={<SignupPage onLogin={handleLogin} />} />
                   <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} books={books} onLogout={handleLogout} onUpdateUser={handleLogin} />} />

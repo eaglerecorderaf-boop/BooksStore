@@ -15,6 +15,21 @@ const AdminOrders: React.FC<Props> = ({ orders, onUpdateOrders }) => {
     onUpdateOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
   };
 
+  const handleApproveOrder = (orderId: string) => {
+    onUpdateOrders(orders.map(o => o.id === orderId ? { ...o, status: OrderStatus.PROCESSING, adminNote: 'رسید تایید شد.' } : o));
+    setSelectedOrder(null);
+    alert('سفارش تایید شد و به مرحله پردازش رفت.');
+  };
+
+  const handleRejectOrder = (orderId: string) => {
+    const reason = prompt('لطفاً دلیل رد سفارش را وارد کنید:', 'رسید نامعتبر یا فیک است.');
+    if (reason) {
+      onUpdateOrders(orders.map(o => o.id === orderId ? { ...o, status: OrderStatus.REJECTED, adminNote: reason } : o));
+      setSelectedOrder(null);
+      alert('سفارش رد شد و به کاربر اطلاع داده می‌شود.');
+    }
+  };
+
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-slate-800">مدیریت سفارش‌ها</h1>
@@ -28,6 +43,7 @@ const AdminOrders: React.FC<Props> = ({ orders, onUpdateOrders }) => {
                 <th className="p-4 font-medium">مشتری</th>
                 <th className="p-4 font-medium">اقلام</th>
                 <th className="p-4 font-medium">مبلغ کل</th>
+                <th className="p-4 font-medium">روش پرداخت</th>
                 <th className="p-4 font-medium">وضعیت</th>
                 <th className="p-4 font-medium">عملیات</th>
               </tr>
@@ -48,6 +64,11 @@ const AdminOrders: React.FC<Props> = ({ orders, onUpdateOrders }) => {
                     </div>
                   </td>
                   <td className="p-4 font-bold">{formatPrice(order.totalAmount)}</td>
+                  <td className="p-4">
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${order.paymentMethod === 'online' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                      {order.paymentMethod === 'online' ? 'آنلاین' : 'کارت به کارت'}
+                    </span>
+                  </td>
                   <td className="p-4">
                     <select 
                       value={order.status}
@@ -142,11 +163,50 @@ const AdminOrders: React.FC<Props> = ({ orders, onUpdateOrders }) => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">وضعیت پرداخت:</span>
-                    <span className="font-bold text-green-600">پرداخت شده (آنلاین)</span>
+                    <span className={`font-bold ${selectedOrder.paymentMethod === 'online' ? 'text-green-600' : 'text-purple-600'}`}>
+                      {selectedOrder.paymentMethod === 'online' ? 'پرداخت شده (آنلاین)' : 'کارت به کارت (نیاز به بررسی)'}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
+
+            {selectedOrder.paymentMethod === 'card_to_card' && selectedOrder.receiptImage && (
+              <div className="mb-8 p-6 bg-slate-900 rounded-3xl text-white no-print">
+                <h4 className="text-sm font-bold mb-4 flex items-center gap-2">
+                  <span>📸</span> تصویر رسید ارسالی کاربر
+                </h4>
+                <div className="flex flex-col md:flex-row gap-6 items-center">
+                  <img 
+                    src={selectedOrder.receiptImage} 
+                    className="w-full md:w-48 h-auto rounded-xl shadow-2xl cursor-pointer hover:scale-105 transition-transform" 
+                    alt="رسید بانکی"
+                    onClick={() => window.open(selectedOrder.receiptImage)}
+                  />
+                  <div className="flex-grow space-y-4">
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      لطفاً مبلغ واریزی را با موجودی حساب خود چک کنید. در صورت صحت رسید، دکمه تایید و در صورت فیک بودن، دکمه رد را بزنید.
+                    </p>
+                    {selectedOrder.status === OrderStatus.VERIFYING_PAYMENT && (
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => handleApproveOrder(selectedOrder.id)}
+                          className="flex-1 bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 transition-all text-sm"
+                        >
+                          ✅ تایید سفارش
+                        </button>
+                        <button 
+                          onClick={() => handleRejectOrder(selectedOrder.id)}
+                          className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-all text-sm"
+                        >
+                          ❌ رد سفارش (فیک)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               <h4 className="text-xs font-black text-slate-400 uppercase print:text-slate-900">لیست کتاب‌ها</h4>

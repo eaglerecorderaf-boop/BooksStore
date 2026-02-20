@@ -1,10 +1,13 @@
 
 export enum OrderStatus {
   PENDING = 'در انتظار',
+  AWAITING_PAYMENT = 'در انتظار پرداخت',
+  VERIFYING_PAYMENT = 'در حال بررسی رسید',
   PROCESSING = 'در حال پردازش',
   SHIPPED = 'ارسال شده',
   DELIVERED = 'تحویل داده شده',
-  CANCELLED = 'لغو شده'
+  CANCELLED = 'لغو شده',
+  REJECTED = 'رد شده'
 }
 
 export interface Book {
@@ -45,6 +48,9 @@ export interface Order {
   totalAmount: number;
   status: OrderStatus;
   createdAt: string;
+  paymentMethod: 'online' | 'card_to_card';
+  receiptImage?: string; // base64
+  adminNote?: string;
   shippingAddress: {
     fullName: string;
     mobile: string;
@@ -88,4 +94,10 @@ export interface Coupon {
   code: string;
   discount: number; // percentage
   isActive: boolean;
+}
+
+export interface PaymentSettings {
+  cardNumber: string;
+  accountHolder: string;
+  bankName: string;
 }
