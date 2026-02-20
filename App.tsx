@@ -183,6 +183,15 @@ const App: React.FC = () => {
     setOrders(newOrders);
     storage.saveOrders(newOrders);
     supabaseService.saveOrder(order).catch(console.error);
+    
+    // Add notification for the user
+    handleAddNotification(
+      order.userId,
+      'سفارش شما ثبت شد',
+      `سفارش #${order.id.slice(0, 8)} با موفقیت ثبت شد و در حال بررسی است.`,
+      'info'
+    );
+
     clearCart();
   };
 

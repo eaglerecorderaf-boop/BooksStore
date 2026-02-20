@@ -23,14 +23,32 @@ const AdminOrders: React.FC<Props> = ({ orders, onUpdateOrders, onAddNotificatio
     let message = `وضعیت سفارش #${orderId.slice(0, 8)} به "${newStatus}" تغییر یافت.`;
     let type: 'info' | 'success' | 'warning' | 'error' = 'info';
 
-    if (newStatus === OrderStatus.DELIVERED) {
-      title = 'سفارش تحویل داده شد';
-      message = `سفارش شما با موفقیت تحویل داده شد. ممنون از اعتماد شما به کتابینو! امیدواریم از مطالعه کتاب‌های خود لذت ببرید.`;
-      type = 'success';
-    } else if (newStatus === OrderStatus.SHIPPED) {
-      title = 'سفارش ارسال شد';
-      message = `سفارش شما تحویل پست گردید و به زودی به دست شما خواهد رسید.`;
-      type = 'success';
+    switch (newStatus) {
+      case OrderStatus.PROCESSING:
+        title = 'سفارش در حال پردازش';
+        message = `سفارش #${orderId.slice(0, 8)} تایید شد و در حال آماده‌سازی برای ارسال است.`;
+        type = 'success';
+        break;
+      case OrderStatus.SHIPPED:
+        title = 'سفارش ارسال شد';
+        message = `سفارش #${orderId.slice(0, 8)} تحویل پست گردید و به زودی به دست شما خواهد رسید.`;
+        type = 'success';
+        break;
+      case OrderStatus.DELIVERED:
+        title = 'سفارش تحویل داده شد';
+        message = `سفارش #${orderId.slice(0, 8)} با موفقیت تحویل داده شد. ممنون از اعتماد شما به کتابینو!`;
+        type = 'success';
+        break;
+      case OrderStatus.CANCELLED:
+        title = 'سفارش لغو شد';
+        message = `سفارش #${orderId.slice(0, 8)} لغو گردید. در صورت کسر وجه، مبلغ تا ۷۲ ساعت آینده به حساب شما بازمی‌گردد.`;
+        type = 'warning';
+        break;
+      case OrderStatus.REJECTED:
+        title = 'سفارش رد شد';
+        message = `سفارش #${orderId.slice(0, 8)} توسط مدیریت رد شد. لطفاً بخش جزئیات سفارش را بررسی کنید.`;
+        type = 'error';
+        break;
     }
 
     onAddNotification(order.userId, title, message, type);

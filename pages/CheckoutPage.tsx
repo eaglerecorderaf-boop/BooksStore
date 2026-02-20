@@ -137,6 +137,32 @@ const CheckoutPage: React.FC<Props> = ({ cart, user, onPlaceOrder, coupons, paym
     return null;
   }
 
+  if (!user) {
+    return (
+      <div className="max-w-xl mx-auto py-20 text-center">
+        <div className="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">👤</div>
+        <h2 className="text-3xl font-black text-slate-900 mb-4">ورود به حساب کاربری</h2>
+        <p className="text-slate-500 mb-10 leading-relaxed">
+          برای ثبت سفارش و تکمیل خرید، ابتدا باید وارد حساب کاربری خود شوید یا ثبت‌نام کنید.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button 
+            onClick={() => navigate('/login?redirect=checkout')}
+            className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20"
+          >
+            ورود به حساب
+          </button>
+          <button 
+            onClick={() => navigate('/signup?redirect=checkout')}
+            className="bg-white text-slate-900 border border-slate-200 px-10 py-4 rounded-2xl font-bold hover:bg-slate-50 transition-all"
+          >
+            ثبت‌نام جدید
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-slate-800 mb-12">تکمیل سفارش</h1>
