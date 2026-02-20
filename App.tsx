@@ -3,6 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Book, Category, CartItem, User, Order } from './types';
 import { storage } from './services/storage';
+import { supabaseService } from './services/supabaseService';
+import { supabase } from './services/supabase';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -44,6 +46,63 @@ const App: React.FC = () => {
   const [users, setUsers] = useState<User[]>(storage.getUsers());
   const [coupons, setCoupons] = useState<any[]>(storage.getCoupons());
   const [paymentSettings, setPaymentSettings] = useState<any>(storage.getPaymentSettings());
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [dbBooks, dbCategories, dbOrders, dbUsers, dbCoupons, dbSettings] = await Promise.all([
+          supabaseService.getBooks(),
+          supabaseService.getCategories(),
+          supabaseService.getOrders(),
+          supabaseService.getUsers(),
+          supabaseService.getCoupons(),
+          supabaseService.getPaymentSettings()
+        ]);
+
+        if (dbBooks.length > 0) setBooks(dbBooks);
+        if (dbOrders.length > 0) setOrders(dbOrders);
+        if (dbUsers.length > 0) setUsers(dbUsers);
+        if (dbCoupons.length > 0) setCoupons(dbCoupons);
+        setPaymentSettings(dbSettings);
+      } catch (error) {
+        console.error('Error fetching data from Supabase:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Real-time Subscriptions
+    const booksChannel = supabase.channel('books-changes')
+      .on('postgres_changes', { event: '*', table: 'books', schema: 'public' }, () => {
+        supabaseService.getBooks().then(setBooks);
+      }).subscribe();
+
+    const ordersChannel = supabase.channel('orders-changes')
+      .on('postgres_changes', { event: '*', table: 'orders', schema: 'public' }, () => {
+        supabaseService.getOrders().then(setOrders);
+      }).subscribe();
+
+    const usersChannel = supabase.channel('users-changes')
+      .on('postgres_changes', { event: '*', table: 'profiles', schema: 'public' }, () => {
+        supabaseService.getUsers().then(setUsers);
+      }).subscribe();
+
+    const settingsChannel = supabase.channel('settings-changes')
+      .on('postgres_changes', { event: '*', table: 'settings', schema: 'public' }, () => {
+        supabaseService.getPaymentSettings().then(setPaymentSettings);
+      }).subscribe();
+
+    return () => {
+      supabase.removeChannel(booksChannel);
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(usersChannel);
+      supabase.removeChannel(settingsChannel);
+    };
+  }, []);
 
   useEffect(() => {
     storage.saveCart(cart);
@@ -79,6 +138,7 @@ const App: React.FC = () => {
     const newOrders = [order, ...orders];
     setOrders(newOrders);
     storage.saveOrders(newOrders);
+    supabaseService.saveOrder(order).catch(console.error);
     clearCart();
   };
 
@@ -96,7 +156,9 @@ const App: React.FC = () => {
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
         const notifications = [...(u.notifications || []), newNotif];
-        return { ...u, notifications };
+        const updated = { ...u, notifications };
+        supabaseService.updateProfile(updated).catch(console.error);
+        return updated;
       }
       return u;
     });
@@ -121,6 +183,7 @@ const App: React.FC = () => {
     const updatedUser = { ...currentUser, notifications: updatedNotifications };
     setCurrentUser(updatedUser);
     storage.saveCurrentUser(updatedUser);
+    supabaseService.updateProfile(updatedUser).catch(console.error);
 
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
     setUsers(updatedUsers);
@@ -146,6 +209,7 @@ const App: React.FC = () => {
     const updatedUser = { ...currentUser, favorites: newFavorites };
     setCurrentUser(updatedUser);
     storage.saveCurrentUser(updatedUser);
+    supabaseService.updateProfile(updatedUser).catch(console.error);
     
     // Also update in users list
     const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
@@ -156,12 +220,24 @@ const App: React.FC = () => {
   const handleLogin = (user: User) => {
     setCurrentUser(user);
     storage.saveCurrentUser(user);
+    supabaseService.updateProfile(user).catch(console.error);
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
     storage.clearCurrentUser();
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans" dir="rtl">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-500 font-bold">در حال اتصال به پایگاه داده...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router>
@@ -200,11 +276,51 @@ const App: React.FC = () => {
                 <main className="container mx-auto px-4 py-8">
                   <Routes>
                     <Route path="/" element={<AdminDashboard orders={orders} books={books} />} />
-                    <Route path="/books" element={<AdminBooks books={books} categories={categories} onUpdateBooks={(updated) => {setBooks(updated); storage.saveBooks(updated);}} />} />
-                    <Route path="/orders" element={<AdminOrders orders={orders} onUpdateOrders={(updated) => {setOrders(updated); storage.saveOrders(updated);}} onAddNotification={handleAddNotification} />} />
-                    <Route path="/users" element={<AdminUsers users={users} onUpdateUsers={(updated) => {setUsers(updated); storage.saveUsers(updated);}} />} />
-                    <Route path="/coupons" element={<AdminCoupons coupons={coupons} onUpdateCoupons={(updated) => {setCoupons(updated); storage.saveCoupons(updated);}} />} />
-                    <Route path="/settings" element={<AdminSettings settings={paymentSettings} onUpdateSettings={(updated) => {setPaymentSettings(updated); storage.savePaymentSettings(updated);}} />} />
+                    <Route path="/books" element={<AdminBooks books={books} categories={categories} onUpdateBooks={(updated) => {
+                      const deletedBook = books.find(b => !updated.find(u => u.id === b.id));
+                      const addedOrUpdated = updated.filter(u => {
+                        const original = books.find(b => b.id === u.id);
+                        return !original || JSON.stringify(original) !== JSON.stringify(u);
+                      });
+
+                      setBooks(updated); 
+                      storage.saveBooks(updated);
+
+                      if (deletedBook) supabaseService.deleteBook(deletedBook.id).catch(console.error);
+                      addedOrUpdated.forEach(b => supabaseService.saveBook(b).catch(console.error));
+                    }} />} />
+                    <Route path="/orders" element={<AdminOrders orders={orders} onUpdateOrders={(updated) => {
+                      const changedOrder = updated.find(u => {
+                        const original = orders.find(o => o.id === u.id);
+                        return !original || JSON.stringify(original) !== JSON.stringify(u);
+                      });
+
+                      setOrders(updated); 
+                      storage.saveOrders(updated);
+                      
+                      if (changedOrder) supabaseService.updateOrder(changedOrder).catch(console.error);
+                    }} onAddNotification={handleAddNotification} />} />
+                    <Route path="/users" element={<AdminUsers users={users} onUpdateUsers={(updated) => {
+                      const changedUser = updated.find(u => {
+                        const original = users.find(o => o.id === u.id);
+                        return !original || JSON.stringify(original) !== JSON.stringify(u);
+                      });
+
+                      setUsers(updated); 
+                      storage.saveUsers(updated);
+                      
+                      if (changedUser) supabaseService.updateProfile(changedUser).catch(console.error);
+                    }} />} />
+                    <Route path="/coupons" element={<AdminCoupons coupons={coupons} onUpdateCoupons={(updated) => {
+                      setCoupons(updated); 
+                      storage.saveCoupons(updated);
+                      supabaseService.saveCoupons(updated).catch(console.error);
+                    }} />} />
+                    <Route path="/settings" element={<AdminSettings settings={paymentSettings} onUpdateSettings={(updated) => {
+                      setPaymentSettings(updated); 
+                      storage.savePaymentSettings(updated);
+                      supabaseService.savePaymentSettings(updated).catch(console.error);
+                    }} />} />
                   </Routes>
                 </main>
               </div>
