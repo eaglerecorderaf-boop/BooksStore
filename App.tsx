@@ -176,7 +176,7 @@ const App: React.FC = () => {
                   <Route path="/books" element={<BookListPage books={books} categories={categories} />} />
                   <Route path="/book/:slug" element={<BookDetailPage books={books} onAddToCart={addToCart} onToggleFavorite={handleToggleFavorite} favorites={currentUser?.favorites || []} />} />
                   <Route path="/cart" element={<CartPage cart={cart} onUpdateQty={updateCartQuantity} onRemove={removeFromCart} />} />
-                  <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} />} />
+                  <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} coupons={coupons} />} />
                   <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
                   <Route path="/signup" element={<SignupPage onLogin={handleLogin} />} />
                   <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} books={books} onLogout={handleLogout} onUpdateUser={handleLogin} />} />

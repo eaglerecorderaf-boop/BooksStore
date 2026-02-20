@@ -1,23 +1,50 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CartItem, Order, User, OrderStatus, Address } from '../types';
+import { CartItem, Order, User, OrderStatus, Address, Coupon } from '../types';
 import { formatPrice } from '../constants';
 
 interface Props {
   cart: CartItem[];
   user: User | null;
   onPlaceOrder: (order: Order) => void;
+  coupons: Coupon[];
 }
 
-const CheckoutPage: React.FC<Props> = ({ cart, user, onPlaceOrder }) => {
+const CheckoutPage: React.FC<Props> = ({ cart, user, onPlaceOrder, coupons }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string>(
     user?.addresses && user.addresses.length > 0 ? user.addresses[0].id : 'new'
   );
+  
+  // Coupon State
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState('');
 
-  const totalAmount = cart.reduce((acc, item) => acc + (item.price * (1 - item.discount / 100) * item.quantity), 0);
+  const subtotal = cart.reduce((acc, item) => acc + (item.price * (1 - item.discount / 100) * item.quantity), 0);
+  const discountAmount = appliedCoupon ? (subtotal * appliedCoupon.discount / 100) : 0;
+  const totalAmount = subtotal - discountAmount;
+
+  const handleApplyCoupon = () => {
+    setCouponError('');
+    setAppliedCoupon(null);
+
+    if (!couponCode.trim()) {
+      setCouponError('لطفاً کد تخفیف را وارد کنید.');
+      return;
+    }
+
+    const coupon = coupons.find(c => c.code === couponCode && c.isActive);
+
+    if (coupon) {
+      setAppliedCoupon(coupon);
+      setCouponError('');
+    } else {
+      setCouponError('کد تخفیف نامعتبر یا منقضی شده است.');
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -149,10 +176,45 @@ const CheckoutPage: React.FC<Props> = ({ cart, user, onPlaceOrder }) => {
                   <span className="font-mono">{formatPrice(item.price * (1 - item.discount / 100) * item.quantity)}</span>
                 </div>
               ))}
-              <div className="border-t pt-4 flex justify-between items-center text-lg font-bold text-slate-900">
-                <span>جمع کل:</span>
-                <span className="text-amber-600">{formatPrice(totalAmount)}</span>
+              <div className="border-t pt-4 space-y-2">
+                <div className="flex justify-between items-center text-sm text-slate-500">
+                  <span>جمع کل:</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between items-center text-sm text-green-600 font-bold">
+                    <span>تخفیف ({appliedCoupon.discount}%):</span>
+                    <span>- {formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-lg font-bold text-slate-900 pt-2 border-t border-slate-200">
+                  <span>مبلغ قابل پرداخت:</span>
+                  <span className="text-amber-600">{formatPrice(totalAmount)}</span>
+                </div>
               </div>
+            </div>
+
+            {/* Coupon Section */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 mb-6">
+              <label className="block text-xs font-bold text-slate-500 mb-2">کد تخفیف</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="مثلاً: OFF20"
+                  className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+                <button 
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  className="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"
+                >
+                  اعمال
+                </button>
+              </div>
+              {couponError && <p className="text-xs text-red-500 mt-2 font-bold">{couponError}</p>}
+              {appliedCoupon && <p className="text-xs text-green-600 mt-2 font-bold">کد تخفیف با موفقیت اعمال شد!</p>}
             </div>
 
             <div className="space-y-4">
