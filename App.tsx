@@ -38,14 +38,14 @@ import Footer from './components/Footer';
 import Logo from './components/Logo';
 
 const App: React.FC = () => {
-  const [books, setBooks] = useState<Book[]>(storage.getBooks());
+  const [books, setBooks] = useState<Book[]>([]);
   const [categories] = useState<Category[]>(storage.getCategories());
   const [cart, setCart] = useState<CartItem[]>(storage.getCart());
   const [currentUser, setCurrentUser] = useState<User | null>(storage.getCurrentUser());
-  const [orders, setOrders] = useState<Order[]>(storage.getOrders());
-  const [users, setUsers] = useState<User[]>(storage.getUsers());
-  const [coupons, setCoupons] = useState<any[]>(storage.getCoupons());
-  const [paymentSettings, setPaymentSettings] = useState<any>(storage.getPaymentSettings());
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -61,10 +61,10 @@ const App: React.FC = () => {
           supabaseService.getPaymentSettings()
         ]);
 
-        if (dbBooks.length > 0) setBooks(dbBooks);
-        if (dbOrders.length > 0) setOrders(dbOrders);
-        if (dbUsers.length > 0) setUsers(dbUsers);
-        if (dbCoupons.length > 0) setCoupons(dbCoupons);
+        setBooks(dbBooks);
+        setOrders(dbOrders);
+        setUsers(dbUsers);
+        setCoupons(dbCoupons);
         setPaymentSettings(dbSettings);
       } catch (error) {
         console.error('Error fetching data from Supabase:', error);
