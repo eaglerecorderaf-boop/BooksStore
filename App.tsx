@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Book, Category, CartItem, User, Order } from './types';
 import { storage } from './services/storage';
 
@@ -16,6 +16,7 @@ import SignupPage from './pages/SignupPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminBooks from './pages/AdminBooks';
 import AdminOrders from './pages/AdminOrders';
+import AdminAuthWrapper from './components/AdminAuthWrapper';
 
 // Informational Pages
 import AboutPage from './pages/AboutPage';
@@ -29,6 +30,7 @@ import CareersPage from './pages/CareersPage';
 // Components
 import Header from './components/Header';
 import Footer from './components/Footer';
+import Logo from './components/Logo';
 
 const App: React.FC = () => {
   const [books, setBooks] = useState<Book[]>(storage.getBooks());
@@ -86,44 +88,82 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
-        <Header cartCount={cart.reduce((acc, item) => acc + item.quantity, 0)} user={currentUser} />
-        
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <Routes>
-            {/* صفحه اصلی - صریحاً در ریشه قرار دارد */}
-            <Route path="/" element={<HomePage books={books} categories={categories} />} />
-            
-            {/* سایر صفحات */}
-            <Route path="/books" element={<BookListPage books={books} categories={categories} />} />
-            <Route path="/book/:slug" element={<BookDetailPage books={books} onAddToCart={addToCart} />} />
-            <Route path="/cart" element={<CartPage cart={cart} onUpdateQty={updateCartQuantity} onRemove={removeFromCart} />} />
-            <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} />} />
-            <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-            <Route path="/signup" element={<SignupPage onLogin={handleLogin} />} />
-            <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} onLogout={handleLogout} />} />
-            
-            {/* صفحات اطلاع‌رسانی */}
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/returns" element={<ReturnPolicyPage />} />
-            <Route path="/privacy" element={<PrivacyPolicyPage />} />
-            <Route path="/shipping" element={<ShippingInfoPage />} />
-            <Route path="/careers" element={<CareersPage />} />
+      <Routes>
+        {/* Admin Section - Completely Separate Layout */}
+        <Route
+          path="/admin/*"
+          element={
+            <AdminAuthWrapper>
+              <div className="min-h-screen bg-slate-50 font-sans" dir="rtl">
+                <div className="bg-slate-900 text-white p-4 shadow-lg">
+                  <div className="container mx-auto flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <Logo size={32} className="text-white" />
+                      <span className="bg-amber-500 text-slate-900 px-2 py-0.5 rounded text-[10px] font-black uppercase">Admin Panel</span>
+                    </div>
+                    <div className="flex gap-4 text-xs font-bold">
+                      <Link to="/admin" className="hover:text-amber-500">داشبورد</Link>
+                      <Link to="/admin/books" className="hover:text-amber-500">کتاب‌ها</Link>
+                      <Link to="/admin/orders" className="hover:text-amber-500">سفارشات</Link>
+                      <button 
+                        onClick={() => {
+                          sessionStorage.removeItem('admin_auth');
+                          window.location.href = '/';
+                        }}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        خروج
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <main className="container mx-auto px-4 py-8">
+                  <Routes>
+                    <Route path="/" element={<AdminDashboard orders={orders} books={books} />} />
+                    <Route path="/books" element={<AdminBooks books={books} categories={categories} onUpdateBooks={(updated) => {setBooks(updated); storage.saveBooks(updated);}} />} />
+                    <Route path="/orders" element={<AdminOrders orders={orders} onUpdateOrders={(updated) => {setOrders(updated); storage.saveOrders(updated);}} />} />
+                  </Routes>
+                </main>
+              </div>
+            </AdminAuthWrapper>
+          }
+        />
 
-            {/* پنل ادمین */}
-            <Route path="/admin" element={<AdminDashboard orders={orders} books={books} />} />
-            <Route path="/admin/books" element={<AdminBooks books={books} categories={categories} onUpdateBooks={(updated) => {setBooks(updated); storage.saveBooks(updated);}} />} />
-            <Route path="/admin/orders" element={<AdminOrders orders={orders} onUpdateOrders={(updated) => {setOrders(updated); storage.saveOrders(updated);}} />} />
+        {/* Main Site Section */}
+        <Route
+          path="*"
+          element={
+            <div className="flex flex-col min-h-screen">
+              <Header cartCount={cart.reduce((acc, item) => acc + item.quantity, 0)} user={currentUser} />
+              
+              <main className="flex-grow container mx-auto px-4 py-8">
+                <Routes>
+                  <Route path="/" element={<HomePage books={books} categories={categories} />} />
+                  <Route path="/books" element={<BookListPage books={books} categories={categories} />} />
+                  <Route path="/book/:slug" element={<BookDetailPage books={books} onAddToCart={addToCart} />} />
+                  <Route path="/cart" element={<CartPage cart={cart} onUpdateQty={updateCartQuantity} onRemove={removeFromCart} />} />
+                  <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} />} />
+                  <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+                  <Route path="/signup" element={<SignupPage onLogin={handleLogin} />} />
+                  <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} onLogout={handleLogout} />} />
+                  
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/faq" element={<FAQPage />} />
+                  <Route path="/returns" element={<ReturnPolicyPage />} />
+                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                  <Route path="/shipping" element={<ShippingInfoPage />} />
+                  <Route path="/careers" element={<CareersPage />} />
 
-            {/* مدیریت مسیرهای اشتباه - هدایت به صفحه اصلی */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </main>
 
-        <Footer />
-      </div>
+              <Footer />
+            </div>
+          }
+        />
+      </Routes>
     </Router>
   );
 };
