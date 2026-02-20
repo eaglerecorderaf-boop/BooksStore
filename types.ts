@@ -52,12 +52,35 @@ export interface Order {
   };
 }
 
+export interface Address {
+  id: string;
+  title: string;
+  fullName: string;
+  mobile: string;
+  city: string;
+  fullAddress: string;
+}
+
+export interface Review {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  rating: number;
+  comment: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
+  mobile?: string;
   isAdmin: boolean;
   avatar?: string;
+  addresses?: Address[];
+  favorites?: string[]; // array of book IDs
+  reviews?: Review[];
 }
 
 export interface Coupon {

@@ -153,7 +153,7 @@ const App: React.FC = () => {
                   <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} />} />
                   <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
                   <Route path="/signup" element={<SignupPage onLogin={handleLogin} />} />
-                  <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} onLogout={handleLogout} />} />
+                  <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} onLogout={handleLogout} onUpdateUser={handleLogin} />} />
                   
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
