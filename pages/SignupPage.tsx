@@ -5,10 +5,11 @@ import Logo from '../components/Logo';
 import { storage } from '../services/storage';
 
 interface Props {
-  onLogin: (user: User) => void;
+  onSignup: (user: User) => void;
+  users: User[];
 }
 
-const SignupPage: React.FC<Props> = ({ onLogin }) => {
+const SignupPage: React.FC<Props> = ({ onSignup, users }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -25,7 +26,6 @@ const SignupPage: React.FC<Props> = ({ onLogin }) => {
       return;
     }
 
-    const users = storage.getUsers();
     const existingUser = users.find(u => u.email === email);
 
     if (existingUser) {
@@ -41,16 +41,11 @@ const SignupPage: React.FC<Props> = ({ onLogin }) => {
       isAdmin: false,
       addresses: [],
       favorites: [],
-      reviews: []
+      reviews: [],
+      notifications: []
     };
 
-    const updatedUsers = [...users, newUser];
-    storage.saveUsers(updatedUsers);
-    
-    // Also save as current user
-    storage.saveCurrentUser(newUser);
-    
-    onLogin(newUser);
+    onSignup(newUser);
     navigate('/profile');
   };
 

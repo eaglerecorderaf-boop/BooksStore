@@ -342,8 +342,15 @@ const App: React.FC = () => {
                   <Route path="/book/:slug" element={<BookDetailPage books={books} onAddToCart={addToCart} onToggleFavorite={handleToggleFavorite} favorites={currentUser?.favorites || []} />} />
                   <Route path="/cart" element={<CartPage cart={cart} onUpdateQty={updateCartQuantity} onRemove={removeFromCart} />} />
                   <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} coupons={coupons} paymentSettings={paymentSettings} />} />
-                  <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-                  <Route path="/signup" element={<SignupPage onLogin={handleLogin} />} />
+                  <Route path="/login" element={<LoginPage onLogin={handleLogin} users={users} />} />
+                  <Route path="/signup" element={<SignupPage onSignup={(newUser) => {
+                    const updatedUsers = [...users, newUser];
+                    setUsers(updatedUsers);
+                    storage.saveUsers(updatedUsers);
+                    storage.saveCurrentUser(newUser);
+                    setCurrentUser(newUser);
+                    supabaseService.updateProfile(newUser).catch(console.error);
+                  }} users={users} />} />
                   <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} books={books} onLogout={handleLogout} onUpdateUser={handleLogin} />} />
                   
                   <Route path="/about" element={<AboutPage />} />

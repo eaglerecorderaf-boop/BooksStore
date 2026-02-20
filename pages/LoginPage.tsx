@@ -6,9 +6,10 @@ import { storage } from '../services/storage';
 
 interface Props {
   onLogin: (user: User) => void;
+  users: User[];
 }
 
-const LoginPage: React.FC<Props> = ({ onLogin }) => {
+const LoginPage: React.FC<Props> = ({ onLogin, users }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -24,7 +25,6 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
       return;
     }
 
-    const users = storage.getUsers();
     const user = users.find(u => u.email === email && u.password === password);
 
     if (user) {
