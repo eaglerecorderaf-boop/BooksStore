@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User } from '../types';
+import Logo from './Logo';
 
 interface Props {
   cartCount: number;
@@ -36,7 +37,10 @@ const Header: React.FC<Props> = ({ cartCount, user }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <Link to="/" className="w-8 h-8 md:w-11 md:h-11 bg-slate-900 rounded-xl flex items-center justify-center text-white text-base md:text-2xl font-black">ک</Link>
+              <Link to="/" className="hover:opacity-80 transition-opacity">
+                <Logo size={32} className="md:hidden" />
+                <Logo size={44} className="hidden md:flex" />
+              </Link>
             </div>
 
             {/* Micro-Search: Enhanced Visibility */}
@@ -81,10 +85,9 @@ const Header: React.FC<Props> = ({ cartCount, user }) => {
         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[4px]" onClick={() => setIsMenuOpen(false)}></div>
         <div className={`absolute top-0 right-0 h-full w-[260px] bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-500 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
           <div className="p-5 border-b flex justify-between items-center">
-            <div className="flex items-center gap-2">
-               <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold">ک</div>
-               <span className="font-black text-sm text-slate-800">کتابینو</span>
-            </div>
+            <Link to="/" onClick={() => setIsMenuOpen(false)}>
+              <Logo size={32} />
+            </Link>
             <button onClick={() => setIsMenuOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full text-slate-400">✕</button>
           </div>
 

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
 
 const Footer: React.FC = () => {
   return (
@@ -9,12 +10,9 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* About */}
           <div>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-amber-500 rounded flex items-center justify-center text-slate-900 font-bold">
-                ک
-              </div>
-              <span className="text-xl font-bold text-white">کتابینو</span>
-            </div>
+            <Link to="/" className="hover:opacity-80 transition-opacity mb-6 block">
+              <Logo size={40} className="text-white" />
+            </Link>
             <p className="text-sm leading-relaxed mb-6">
               کتابینو مرجع تخصصی کتاب‌های علمی، دانشگاهی و داستانی. ما تلاش می‌کنیم بهترین تجربه خرید کتاب را برای شما فراهم کنیم.
             </p>

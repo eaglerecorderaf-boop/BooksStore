@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User } from '../types';
+import Logo from '../components/Logo';
 
 interface Props {
   onLogin: (user: User) => void;
@@ -41,9 +42,9 @@ const SignupPage: React.FC<Props> = ({ onLogin }) => {
         {/* Form Section */}
         <div className="p-8 md:p-12 order-2 md:order-1">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center text-slate-900 text-3xl font-bold mx-auto mb-4">
-              ک
-            </div>
+            <Link to="/" className="inline-block mb-4">
+              <Logo size={64} className="flex-col" />
+            </Link>
             <h1 className="text-3xl font-bold text-slate-800">ساخت حساب</h1>
             <p className="text-slate-500 text-sm mt-2">به خانواده کتابینو بپیوندید</p>
           </div>

@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { User } from '../types';
+import Logo from '../components/Logo';
 
 interface Props {
   onLogin: (user: User) => void;
@@ -41,9 +42,9 @@ const AuthPage: React.FC<Props> = ({ onLogin }) => {
     <div className="max-w-md mx-auto my-12">
       <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
         <div className="bg-slate-900 p-8 text-center text-white">
-          <div className="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center text-slate-900 text-3xl font-bold mx-auto mb-4">
-            ک
-          </div>
+          <Link to="/" className="inline-block mb-4">
+            <Logo size={64} className="flex-col text-white" />
+          </Link>
           <h1 className="text-2xl font-bold">{isLogin ? 'خوش آمدید' : 'ساخت حساب کاربری'}</h1>
           <p className="text-slate-400 text-sm mt-2">
             {isLogin ? 'برای ورود به حساب خود اطلاعات زیر را وارد کنید' : 'به خانواده بزرگ کتابینو بپیوندید'}
