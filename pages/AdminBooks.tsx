@@ -25,9 +25,15 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
     const bookData: Partial<Book> = {
       title: formData.get('title') as string,
       author: formData.get('author') as string,
+      translator: formData.get('translator') as string,
+      publisher: formData.get('publisher') as string,
       price: Number(formData.get('price')),
+      discount: Number(formData.get('discount')),
       stock: Number(formData.get('stock')),
       category: formData.get('category') as string,
+      description: formData.get('description') as string,
+      image: formData.get('image') as string,
+      rating: Number(formData.get('rating')),
       slug: (formData.get('title') as string).replace(/\s+/g, '-').toLowerCase(),
     };
 
@@ -37,15 +43,10 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
       const newBook: Book = {
         ...bookData as Book,
         id: Math.random().toString(36).substr(2, 9),
-        image: `https://picsum.photos/seed/${Math.random()}/400/600`,
-        rating: 0,
         isbn: 'N/A',
-        publisher: 'N/A',
-        publishDate: '۱۴۰۳',
+        publishDate: new Date().toLocaleDateString('fa-IR'),
         pages: 0,
         language: 'فارسی',
-        description: 'توضیحات پیش‌فرض',
-        discount: 0,
       };
       onUpdateBooks([newBook, ...books]);
     }
@@ -58,7 +59,7 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-slate-800">مدیریت کتاب‌ها</h1>
         <button 
-          onClick={() => setShowModal(true)}
+          onClick={() => { setEditingBook(null); setShowModal(true); }}
           className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center gap-2"
         >
           <span>+</span> افزودن کتاب جدید
@@ -74,6 +75,7 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
                 <th className="p-4 font-medium">عنوان و نویسنده</th>
                 <th className="p-4 font-medium">دسته‌بندی</th>
                 <th className="p-4 font-medium">قیمت</th>
+                <th className="p-4 font-medium">تخفیف</th>
                 <th className="p-4 font-medium">موجودی</th>
                 <th className="p-4 font-medium">عملیات</th>
               </tr>
@@ -86,12 +88,13 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
                   </td>
                   <td className="p-4">
                     <div className="font-bold text-slate-800">{book.title}</div>
-                    <div className="text-xs text-slate-400">{book.author}</div>
+                    <div className="text-xs text-slate-400">{book.author} {book.translator ? `(ترجمه: ${book.translator})` : ''}</div>
                   </td>
                   <td className="p-4">
                     <span className="bg-slate-100 px-2 py-1 rounded text-[10px] text-slate-600">{book.category}</span>
                   </td>
                   <td className="p-4 font-bold">{formatPrice(book.price)}</td>
+                  <td className="p-4 text-red-500 font-bold">{book.discount}%</td>
                   <td className="p-4">
                     <span className={book.stock < 10 ? 'text-red-500 font-bold' : 'text-slate-600'}>
                       {book.stock} عدد
@@ -120,39 +123,76 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
         </div>
       </div>
 
-      {/* Modal Mockup */}
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg p-8 shadow-2xl animate-in zoom-in duration-200">
-            <h3 className="text-xl font-bold mb-6">{editingBook ? 'ویرایش کتاب' : 'افزودن کتاب جدید'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">عنوان کتاب</label>
-                <input name="title" defaultValue={editingBook?.title} required className="w-full bg-slate-50 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">نویسنده</label>
-                <input name="author" defaultValue={editingBook?.author} required className="w-full bg-slate-50 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">قیمت (تومان)</label>
-                  <input name="price" type="number" defaultValue={editingBook?.price} required className="w-full bg-slate-50 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+          <div className="bg-white rounded-3xl w-full max-w-2xl p-8 shadow-2xl animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold">{editingBook ? 'ویرایش کتاب' : 'افزودن کتاب جدید'}</h3>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">عنوان کتاب</label>
+                    <input name="title" defaultValue={editingBook?.title} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">نویسنده</label>
+                    <input name="author" defaultValue={editingBook?.author} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">مترجم (اختیاری)</label>
+                    <input name="translator" defaultValue={editingBook?.translator} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">ناشر</label>
+                    <input name="publisher" defaultValue={editingBook?.publisher} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">URL تصویر پوستر</label>
+                    <input name="image" defaultValue={editingBook?.image} required placeholder="https://..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none text-left" dir="ltr" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">موجودی</label>
-                  <input name="stock" type="number" defaultValue={editingBook?.stock} required className="w-full bg-slate-50 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">قیمت (تومان)</label>
+                      <input name="price" type="number" defaultValue={editingBook?.price} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">تخفیف (درصد)</label>
+                      <input name="discount" type="number" min="0" max="100" defaultValue={editingBook?.discount} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">موجودی</label>
+                      <input name="stock" type="number" defaultValue={editingBook?.stock} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">امتیاز (۰ تا ۵)</label>
+                      <input name="rating" type="number" step="0.1" min="0" max="5" defaultValue={editingBook?.rating} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">دسته‌بندی</label>
+                    <select name="category" defaultValue={editingBook?.category} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none">
+                      {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">خلاصه کتاب</label>
+                    <textarea name="description" defaultValue={editingBook?.description} required rows={4} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">دسته‌بندی</label>
-                <select name="category" defaultValue={editingBook?.category} className="w-full bg-slate-50 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none">
-                  {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                </select>
-              </div>
+
               <div className="flex gap-4 pt-4">
-                <button type="submit" className="flex-grow bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all">ذخیره اطلاعات</button>
-                <button type="button" onClick={() => setShowModal(false)} className="px-6 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200">انصراف</button>
+                <button type="submit" className="flex-grow bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-900/20">ذخیره اطلاعات کتاب</button>
+                <button type="button" onClick={() => setShowModal(false)} className="px-8 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all">انصراف</button>
               </div>
             </form>
           </div>

@@ -43,4 +43,16 @@ export const storage = {
     return data ? JSON.parse(data) : [];
   },
   saveCart: (cart: any[]) => localStorage.setItem(KEYS.CART, JSON.stringify(cart)),
+
+  getUsers: (): User[] => {
+    const data = localStorage.getItem(KEYS.USERS);
+    return data ? JSON.parse(data) : [];
+  },
+  saveUsers: (users: User[]) => localStorage.setItem(KEYS.USERS, JSON.stringify(users)),
+
+  getCoupons: (): Coupon[] => {
+    const data = localStorage.getItem(KEYS.COUPONS);
+    return data ? JSON.parse(data) : [];
+  },
+  saveCoupons: (coupons: Coupon[]) => localStorage.setItem(KEYS.COUPONS, JSON.stringify(coupons)),
 };

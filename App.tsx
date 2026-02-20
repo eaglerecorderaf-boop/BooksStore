@@ -16,6 +16,8 @@ import SignupPage from './pages/SignupPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminBooks from './pages/AdminBooks';
 import AdminOrders from './pages/AdminOrders';
+import AdminUsers from './pages/AdminUsers';
+import AdminCoupons from './pages/AdminCoupons';
 import AdminAuthWrapper from './components/AdminAuthWrapper';
 
 // Informational Pages
@@ -38,6 +40,8 @@ const App: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>(storage.getCart());
   const [currentUser, setCurrentUser] = useState<User | null>(storage.getCurrentUser());
   const [orders, setOrders] = useState<Order[]>(storage.getOrders());
+  const [users, setUsers] = useState<User[]>(storage.getUsers());
+  const [coupons, setCoupons] = useState<any[]>(storage.getCoupons());
 
   useEffect(() => {
     storage.saveCart(cart);
@@ -105,6 +109,8 @@ const App: React.FC = () => {
                       <Link to="/admin" className="hover:text-amber-500">داشبورد</Link>
                       <Link to="/admin/books" className="hover:text-amber-500">کتاب‌ها</Link>
                       <Link to="/admin/orders" className="hover:text-amber-500">سفارشات</Link>
+                      <Link to="/admin/users" className="hover:text-amber-500">کاربران</Link>
+                      <Link to="/admin/coupons" className="hover:text-amber-500">تخفیف‌ها</Link>
                       <button 
                         onClick={() => {
                           sessionStorage.removeItem('admin_auth');
@@ -122,6 +128,8 @@ const App: React.FC = () => {
                     <Route path="/" element={<AdminDashboard orders={orders} books={books} />} />
                     <Route path="/books" element={<AdminBooks books={books} categories={categories} onUpdateBooks={(updated) => {setBooks(updated); storage.saveBooks(updated);}} />} />
                     <Route path="/orders" element={<AdminOrders orders={orders} onUpdateOrders={(updated) => {setOrders(updated); storage.saveOrders(updated);}} />} />
+                    <Route path="/users" element={<AdminUsers users={users} onUpdateUsers={(updated) => {setUsers(updated); storage.saveUsers(updated);}} />} />
+                    <Route path="/coupons" element={<AdminCoupons coupons={coupons} onUpdateCoupons={(updated) => {setCoupons(updated); storage.saveCoupons(updated);}} />} />
                   </Routes>
                 </main>
               </div>

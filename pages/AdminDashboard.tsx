@@ -35,11 +35,29 @@ const AdminDashboard: React.FC<Props> = ({ orders, books }) => {
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
       {/* Sidebar (Simple for Admin) */}
       <aside className="lg:col-span-1 space-y-2">
-        <Link to="/admin" className="block bg-amber-500 text-slate-900 p-4 rounded-xl font-bold shadow-md">📊 داشبورد</Link>
+        <Link to="/admin" className="block bg-amber-500 text-slate-900 p-4 rounded-xl font-bold shadow-md transition-all">📊 داشبورد</Link>
         <Link to="/admin/books" className="block bg-white text-slate-600 p-4 rounded-xl font-bold hover:bg-slate-50 transition-all">📖 مدیریت کتاب‌ها</Link>
         <Link to="/admin/orders" className="block bg-white text-slate-600 p-4 rounded-xl font-bold hover:bg-slate-50 transition-all">📦 مدیریت سفارش‌ها</Link>
         <Link to="/admin/users" className="block bg-white text-slate-600 p-4 rounded-xl font-bold hover:bg-slate-50 transition-all">👥 کاربران</Link>
         <Link to="/admin/coupons" className="block bg-white text-slate-600 p-4 rounded-xl font-bold hover:bg-slate-50 transition-all">🎟 کدهای تخفیف</Link>
+        
+        <div className="pt-8 px-4">
+          <h4 className="text-[10px] font-black text-slate-400 uppercase mb-4">تنظیمات درگاه پرداخت</h4>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-600">درگاه مستقیم (بانک)</span>
+              <div className="w-8 h-4 bg-green-500 rounded-full relative">
+                <div className="absolute right-1 top-1 w-2 h-2 bg-white rounded-full"></div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 opacity-50">
+              <span className="text-[10px] font-bold text-slate-600">درگاه واسط (زرین‌پال)</span>
+              <div className="w-8 h-4 bg-slate-200 rounded-full relative">
+                <div className="absolute left-1 top-1 w-2 h-2 bg-white rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
