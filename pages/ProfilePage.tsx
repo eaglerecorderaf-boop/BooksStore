@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { User, Order, Address, Review } from '../types';
 import { formatPrice } from '../constants';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { storage } from '../services/storage';
 
 interface Props {
