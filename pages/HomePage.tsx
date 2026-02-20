@@ -1,5 +1,5 @@
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Book, Category } from '../types';
 import { formatPrice } from '../constants';

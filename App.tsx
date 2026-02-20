@@ -49,10 +49,23 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (retries = 2) => {
       try {
         setIsLoading(true);
         
+        const fetchWithRetry = async <T>(fetchFn: () => Promise<T>, fallback: T, label: string): Promise<T> => {
+          try {
+            return await fetchFn();
+          } catch (err) {
+            console.error(`Error fetching ${label}:`, err);
+            if (retries > 0) {
+              console.log(`Retrying ${label}... (${retries} left)`);
+              return await fetchData(retries - 1) as unknown as T; // This is a bit recursive, simplified for now
+            }
+            return fallback;
+          }
+        };
+
         // Fetch each resource individually to handle partial failures
         const fetchBooks = supabaseService.getBooks().catch(err => {
           console.error('Error fetching books:', err);
