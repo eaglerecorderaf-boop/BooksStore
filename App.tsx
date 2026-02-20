@@ -80,6 +80,32 @@ const App: React.FC = () => {
     clearCart();
   };
 
+  const handleToggleFavorite = (bookId: string) => {
+    if (!currentUser) {
+      alert('لطفاً ابتدا وارد حساب کاربری خود شوید.');
+      return;
+    }
+
+    const currentFavorites = currentUser.favorites || [];
+    const isFavorite = currentFavorites.includes(bookId);
+    
+    let newFavorites;
+    if (isFavorite) {
+      newFavorites = currentFavorites.filter(id => id !== bookId);
+    } else {
+      newFavorites = [...currentFavorites, bookId];
+    }
+
+    const updatedUser = { ...currentUser, favorites: newFavorites };
+    setCurrentUser(updatedUser);
+    storage.saveCurrentUser(updatedUser);
+    
+    // Also update in users list
+    const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
+    setUsers(updatedUsers);
+    storage.saveUsers(updatedUsers);
+  };
+
   const handleLogin = (user: User) => {
     setCurrentUser(user);
     storage.saveCurrentUser(user);
@@ -148,12 +174,12 @@ const App: React.FC = () => {
                 <Routes>
                   <Route path="/" element={<HomePage books={books} categories={categories} />} />
                   <Route path="/books" element={<BookListPage books={books} categories={categories} />} />
-                  <Route path="/book/:slug" element={<BookDetailPage books={books} onAddToCart={addToCart} />} />
+                  <Route path="/book/:slug" element={<BookDetailPage books={books} onAddToCart={addToCart} onToggleFavorite={handleToggleFavorite} favorites={currentUser?.favorites || []} />} />
                   <Route path="/cart" element={<CartPage cart={cart} onUpdateQty={updateCartQuantity} onRemove={removeFromCart} />} />
                   <Route path="/checkout" element={<CheckoutPage cart={cart} onPlaceOrder={handlePlaceOrder} user={currentUser} />} />
                   <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
                   <Route path="/signup" element={<SignupPage onLogin={handleLogin} />} />
-                  <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} onLogout={handleLogout} onUpdateUser={handleLogin} />} />
+                  <Route path="/profile" element={<ProfilePage user={currentUser} orders={orders.filter(o => o.userId === currentUser?.id)} books={books} onLogout={handleLogout} onUpdateUser={handleLogin} />} />
                   
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />

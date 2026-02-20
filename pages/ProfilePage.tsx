@@ -8,13 +8,14 @@ import { storage } from '../services/storage';
 interface Props {
   user: User | null;
   orders: Order[];
+  books: Book[];
   onLogout: () => void;
   onUpdateUser: (user: User) => void;
 }
 
 type Tab = 'orders' | 'favorites' | 'addresses' | 'reviews' | 'security' | 'coupons' | 'edit';
 
-const ProfilePage: React.FC<Props> = ({ user, orders, onLogout, onUpdateUser }) => {
+const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateUser }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('orders');
   const [isEditing, setIsEditing] = useState(false);
@@ -23,6 +24,8 @@ const ProfilePage: React.FC<Props> = ({ user, orders, onLogout, onUpdateUser }) 
     email: user?.email || '',
     mobile: user?.mobile || '',
   });
+
+  const favoriteBooks = books.filter(b => user?.favorites?.includes(b.id));
 
   if (!user) {
     return (
@@ -102,10 +105,30 @@ const ProfilePage: React.FC<Props> = ({ user, orders, onLogout, onUpdateUser }) 
             <h2 className="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3">
               <span>❤️</span> علاقه‌مندی‌ها
             </h2>
-            <div className="bg-white p-12 rounded-3xl text-center border border-slate-100 shadow-sm">
-              <p className="text-slate-400 mb-4">لیست علاقه‌مندی‌های شما خالی است.</p>
-              <button onClick={() => navigate('/books')} className="text-amber-600 font-bold hover:underline">افزودن کتاب</button>
-            </div>
+            {favoriteBooks.length === 0 ? (
+              <div className="bg-white p-12 rounded-3xl text-center border border-slate-100 shadow-sm">
+                <p className="text-slate-400 mb-4">لیست علاقه‌مندی‌های شما خالی است.</p>
+                <button onClick={() => navigate('/books')} className="text-amber-600 font-bold hover:underline">افزودن کتاب</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {favoriteBooks.map(book => (
+                  <div key={book.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex gap-4 group hover:border-red-200 transition-all">
+                    <img src={book.image} className="w-20 h-28 object-cover rounded-xl shadow-sm" alt={book.title} />
+                    <div className="flex-grow flex flex-col justify-between py-1">
+                      <div>
+                        <h4 className="font-bold text-slate-800 text-sm line-clamp-1">{book.title}</h4>
+                        <p className="text-xs text-slate-400 mt-1">{book.author}</p>
+                      </div>
+                      <div className="flex justify-between items-center mt-2">
+                        <span className="font-bold text-slate-900 text-sm">{formatPrice(book.price * (1 - book.discount / 100))}</span>
+                        <Link to={`/book/${book.slug}`} className="text-amber-600 text-xs font-bold hover:underline">مشاهده</Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
       case 'addresses':

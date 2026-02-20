@@ -7,11 +7,14 @@ import { formatPrice } from '../constants';
 interface Props {
   books: Book[];
   onAddToCart: (book: Book) => void;
+  onToggleFavorite: (bookId: string) => void;
+  favorites: string[];
 }
 
-const BookDetailPage: React.FC<Props> = ({ books, onAddToCart }) => {
+const BookDetailPage: React.FC<Props> = ({ books, onAddToCart, onToggleFavorite, favorites }) => {
   const { slug } = useParams<{ slug: string }>();
   const book = books.find(b => b.slug === slug);
+  const isFavorite = book ? favorites.includes(book.id) : false;
 
   useEffect(() => {
     if (book) {
@@ -145,8 +148,15 @@ const BookDetailPage: React.FC<Props> = ({ books, onAddToCart }) => {
                 </svg>
                 افزودن به سبد خرید
               </button>
-              <button className="w-14 h-14 border border-slate-300 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-500 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button 
+                onClick={() => onToggleFavorite(book.id)}
+                className={`w-14 h-14 border rounded-xl flex items-center justify-center transition-all ${
+                  isFavorite 
+                    ? 'bg-red-50 border-red-200 text-red-500 shadow-sm' 
+                    : 'border-slate-300 text-slate-400 hover:text-red-500 hover:border-red-500'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={isFavorite ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </button>
