@@ -17,6 +17,7 @@ const HomePage: React.FC<Props> = ({ books, categories }) => {
   const popularBooks = books.filter(b => b.rating >= 4.7).slice(0, 5);
 
   useEffect(() => {
+    if (popularBooks.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % popularBooks.length);
     }, 7000);
@@ -42,49 +43,57 @@ const HomePage: React.FC<Props> = ({ books, categories }) => {
       <section className="relative h-[320px] md:h-[600px] flex items-center justify-center overflow-hidden">
         {/* Blurred Background for Depth */}
         <div className="absolute inset-0 z-0">
-           <img 
-             src={popularBooks[currentSlide].image} 
-             className="w-full h-full object-cover blur-2xl opacity-20 scale-125" 
-             alt="bg" 
-           />
+           {popularBooks.length > 0 && (
+             <img 
+               src={popularBooks[currentSlide]?.image} 
+               className="w-full h-full object-cover blur-2xl opacity-20 scale-125" 
+               alt="bg" 
+             />
+           )}
         </div>
 
         <div className="relative z-10 w-full max-w-[210px] md:max-w-[420px] aspect-[3/4.2] rounded-xl md:rounded-[3rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 group">
-          {popularBooks.map((book, index) => (
-            <div 
-              key={book.id}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-              }`}
-            >
-              {/* Actual Book Image as Banner */}
-              <img src={book.image} alt={book.title} className="w-full h-full object-cover" />
-              
-              {/* Glass Overlay for Text */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent flex flex-col justify-end p-4 md:p-12 text-right">
-                <div className="space-y-1.5 md:space-y-4">
-                  <h3 className="text-xs md:text-3xl font-black text-white drop-shadow-lg line-clamp-1">{book.title}</h3>
-                  <div className="flex items-center justify-between gap-2">
-                    {/* Updated Glassy Button */}
-                    <Link 
-                      to={`/book/${book.slug}`} 
-                      className="backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white px-3 py-1.5 md:px-8 md:py-4 rounded-lg md:rounded-2xl font-black text-[9px] md:text-lg active:scale-95 shadow-lg transition-all flex items-center gap-1 md:gap-2 group/btn"
-                    >
-                      <span className="drop-shadow-md">خرید آنلاین</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5 md:h-5 md:w-5 group-hover/btn:translate-x-[-2px] transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </Link>
-                    {book.discount > 0 && (
-                      <span className="bg-red-600/90 backdrop-blur-sm text-white px-2 py-0.5 md:px-4 md:py-2 rounded-md md:rounded-xl text-[9px] md:text-xl font-black">
-                        {book.discount}%
-                      </span>
-                    )}
+          {popularBooks.length > 0 ? (
+            popularBooks.map((book, index) => (
+              <div 
+                key={book.id}
+                className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                  index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                }`}
+              >
+                {/* Actual Book Image as Banner */}
+                <img src={book.image} alt={book.title} className="w-full h-full object-cover" />
+                
+                {/* Glass Overlay for Text */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent flex flex-col justify-end p-4 md:p-12 text-right">
+                  <div className="space-y-1.5 md:space-y-4">
+                    <h3 className="text-xs md:text-3xl font-black text-white drop-shadow-lg line-clamp-1">{book.title}</h3>
+                    <div className="flex items-center justify-between gap-2">
+                      {/* Updated Glassy Button */}
+                      <Link 
+                        to={`/book/${book.slug}`} 
+                        className="backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white px-3 py-1.5 md:px-8 md:py-4 rounded-lg md:rounded-2xl font-black text-[9px] md:text-lg active:scale-95 shadow-lg transition-all flex items-center gap-1 md:gap-2 group/btn"
+                      >
+                        <span className="drop-shadow-md">خرید آنلاین</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5 md:h-5 md:w-5 group-hover/btn:translate-x-[-2px] transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </Link>
+                      {book.discount > 0 && (
+                        <span className="bg-red-600/90 backdrop-blur-sm text-white px-2 py-0.5 md:px-4 md:py-2 rounded-md md:rounded-xl text-[9px] md:text-xl font-black">
+                          {book.discount}%
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-slate-400 text-xs">
+              در حال بارگذاری...
             </div>
-          ))}
+          )}
 
           {/* Mini Indicators */}
           <div className="absolute top-4 left-4 z-20 flex flex-col gap-1.5">
