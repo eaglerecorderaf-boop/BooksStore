@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User } from '../types';
 import Logo from '../components/Logo';
+import { storage } from '../services/storage';
 
 interface Props {
   onLogin: (user: User) => void;
@@ -17,21 +18,39 @@ const SignupPage: React.FC<Props> = ({ onLogin }) => {
     const formData = new FormData(e.currentTarget);
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
 
-    if (!name || !email) {
+    if (!name || !email || !password) {
       setError('لطفاً تمامی فیلدها را پر کنید.');
       return;
     }
 
-    // Mock Registration Logic
-    const mockUser: User = {
+    const users = storage.getUsers();
+    const existingUser = users.find(u => u.email === email);
+
+    if (existingUser) {
+      setError('این ایمیل قبلاً ثبت شده است. لطفاً وارد شوید.');
+      return;
+    }
+
+    const newUser: User = {
       id: Math.random().toString(36).substr(2, 9),
       name: name,
       email: email,
-      isAdmin: email.includes('admin'),
+      password: password,
+      isAdmin: false,
+      addresses: [],
+      favorites: [],
+      reviews: []
     };
 
-    onLogin(mockUser);
+    const updatedUsers = [...users, newUser];
+    storage.saveUsers(updatedUsers);
+    
+    // Also save as current user
+    storage.saveCurrentUser(newUser);
+    
+    onLogin(newUser);
     navigate('/profile');
   };
 

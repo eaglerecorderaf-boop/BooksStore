@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User } from '../types';
 import Logo from '../components/Logo';
+import { storage } from '../services/storage';
 
 interface Props {
   onLogin: (user: User) => void;
@@ -16,22 +17,23 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
     setError('');
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
 
-    if (!email) {
-      setError('لطفاً ایمیل خود را وارد کنید.');
+    if (!email || !password) {
+      setError('لطفاً ایمیل و رمز عبور خود را وارد کنید.');
       return;
     }
 
-    // Mock Authentication Logic
-    const mockUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: email.split('@')[0],
-      email: email,
-      isAdmin: email.includes('admin'),
-    };
+    const users = storage.getUsers();
+    const user = users.find(u => u.email === email && u.password === password);
 
-    onLogin(mockUser);
-    navigate('/profile');
+    if (user) {
+      storage.saveCurrentUser(user);
+      onLogin(user);
+      navigate('/profile');
+    } else {
+      setError('ایمیل یا رمز عبور اشتباه است.');
+    }
   };
 
   return (
