@@ -19,6 +19,14 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('orders');
   const [isEditing, setIsEditing] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [addressForm, setAddressForm] = useState<Partial<Address>>({
+    title: '',
+    fullName: '',
+    mobile: '',
+    city: '',
+    fullAddress: '',
+  });
   const [editForm, setEditForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -53,6 +61,41 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
     onUpdateUser(updatedUser);
     setIsEditing(false);
     alert('پروفایل با موفقیت بروزرسانی شد.');
+  };
+
+  const handleAddAddress = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const newAddress: Address = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: addressForm.title || '',
+      fullName: addressForm.fullName || '',
+      mobile: addressForm.mobile || '',
+      city: addressForm.city || '',
+      fullAddress: addressForm.fullAddress || '',
+    };
+
+    const updatedUser = {
+      ...user,
+      addresses: [...(user.addresses || []), newAddress],
+    };
+
+    onUpdateUser(updatedUser);
+    setShowAddressModal(false);
+    setAddressForm({ title: '', fullName: '', mobile: '', city: '', fullAddress: '' });
+    alert('آدرس با موفقیت اضافه شد.');
+  };
+
+  const handleDeleteAddress = (addressId: string) => {
+    if (!user || !confirm('آیا از حذف این آدرس مطمئن هستید؟')) return;
+
+    const updatedUser = {
+      ...user,
+      addresses: (user.addresses || []).filter(a => a.id !== addressId),
+    };
+
+    onUpdateUser(updatedUser);
   };
 
   const renderTabContent = () => {
@@ -138,7 +181,12 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
               <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
                 <span>📍</span> آدرس‌های من
               </h2>
-              <button className="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold">+ افزودن آدرس</button>
+              <button 
+                onClick={() => setShowAddressModal(true)}
+                className="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"
+              >
+                + افزودن آدرس
+              </button>
             </div>
             {(!user.addresses || user.addresses.length === 0) ? (
               <div className="bg-white p-12 rounded-3xl text-center border border-slate-100 shadow-sm">
@@ -147,18 +195,90 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {user.addresses.map(addr => (
-                  <div key={addr.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                  <div key={addr.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:border-amber-200 transition-all">
                     <div className="flex justify-between items-start mb-4">
                       <h4 className="font-bold text-slate-800">{addr.title}</h4>
                       <div className="flex gap-2">
-                        <button className="text-slate-400 hover:text-amber-600">✏️</button>
-                        <button className="text-slate-400 hover:text-red-600">🗑️</button>
+                        <button 
+                          onClick={() => handleDeleteAddress(addr.id)}
+                          className="text-slate-300 hover:text-red-600 transition-colors"
+                        >
+                          🗑️
+                        </button>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-600 mb-2">{addr.fullName}</p>
-                    <p className="text-xs text-slate-400 leading-relaxed">{addr.fullAddress}</p>
+                    <p className="text-sm text-slate-600 mb-1">{addr.fullName}</p>
+                    <p className="text-xs text-slate-400 mb-2">{addr.mobile}</p>
+                    <p className="text-xs text-slate-500 leading-relaxed">{addr.city} - {addr.fullAddress}</p>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Address Modal */}
+            {showAddressModal && (
+              <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-200">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold">افزودن آدرس جدید</h3>
+                    <button onClick={() => setShowAddressModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+                  </div>
+                  <form onSubmit={handleAddAddress} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-2 pr-2">عنوان آدرس (مثلاً خانه، محل کار)</label>
+                      <input 
+                        required
+                        type="text" 
+                        value={addressForm.title}
+                        onChange={(e) => setAddressForm({...addressForm, title: e.target.value})}
+                        className="w-full bg-slate-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-2 pr-2">نام و نام خانوادگی تحویل‌گیرنده</label>
+                      <input 
+                        required
+                        type="text" 
+                        value={addressForm.fullName}
+                        onChange={(e) => setAddressForm({...addressForm, fullName: e.target.value})}
+                        className="w-full bg-slate-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all" 
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-2 pr-2">شماره موبایل</label>
+                        <input 
+                          required
+                          type="tel" 
+                          value={addressForm.mobile}
+                          onChange={(e) => setAddressForm({...addressForm, mobile: e.target.value})}
+                          className="w-full bg-slate-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all text-left" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-2 pr-2">شهر</label>
+                        <input 
+                          required
+                          type="text" 
+                          value={addressForm.city}
+                          onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
+                          className="w-full bg-slate-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all" 
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-2 pr-2">نشانی دقیق</label>
+                      <textarea 
+                        required
+                        rows={3}
+                        value={addressForm.fullAddress}
+                        onChange={(e) => setAddressForm({...addressForm, fullAddress: e.target.value})}
+                        className="w-full bg-slate-50 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all resize-none" 
+                      ></textarea>
+                    </div>
+                    <button type="submit" className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-700 transition-all shadow-lg shadow-slate-900/20">ثبت آدرس</button>
+                  </form>
+                </div>
               </div>
             )}
           </div>
