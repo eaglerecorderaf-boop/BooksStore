@@ -82,6 +82,51 @@ const App: React.FC = () => {
     clearCart();
   };
 
+  const handleAddNotification = (userId: string, title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+    const newNotif = {
+      id: Math.random().toString(36).substr(2, 9),
+      userId,
+      title,
+      message,
+      type,
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedUsers = users.map(u => {
+      if (u.id === userId) {
+        const notifications = [...(u.notifications || []), newNotif];
+        return { ...u, notifications };
+      }
+      return u;
+    });
+
+    setUsers(updatedUsers);
+    storage.saveUsers(updatedUsers);
+
+    if (currentUser && currentUser.id === userId) {
+      const updatedCurrentUser = { ...currentUser, notifications: [...(currentUser.notifications || []), newNotif] };
+      setCurrentUser(updatedCurrentUser);
+      storage.saveCurrentUser(updatedCurrentUser);
+    }
+  };
+
+  const handleMarkAsRead = (notificationId: string) => {
+    if (!currentUser) return;
+
+    const updatedNotifications = (currentUser.notifications || []).map(n => 
+      n.id === notificationId ? { ...n, isRead: true } : n
+    );
+
+    const updatedUser = { ...currentUser, notifications: updatedNotifications };
+    setCurrentUser(updatedUser);
+    storage.saveCurrentUser(updatedUser);
+
+    const updatedUsers = users.map(u => u.id === currentUser.id ? updatedUser : u);
+    setUsers(updatedUsers);
+    storage.saveUsers(updatedUsers);
+  };
+
   const handleToggleFavorite = (bookId: string) => {
     if (!currentUser) {
       alert('لطفاً ابتدا وارد حساب کاربری خود شوید.');
@@ -156,7 +201,7 @@ const App: React.FC = () => {
                   <Routes>
                     <Route path="/" element={<AdminDashboard orders={orders} books={books} />} />
                     <Route path="/books" element={<AdminBooks books={books} categories={categories} onUpdateBooks={(updated) => {setBooks(updated); storage.saveBooks(updated);}} />} />
-                    <Route path="/orders" element={<AdminOrders orders={orders} onUpdateOrders={(updated) => {setOrders(updated); storage.saveOrders(updated);}} />} />
+                    <Route path="/orders" element={<AdminOrders orders={orders} onUpdateOrders={(updated) => {setOrders(updated); storage.saveOrders(updated);}} onAddNotification={handleAddNotification} />} />
                     <Route path="/users" element={<AdminUsers users={users} onUpdateUsers={(updated) => {setUsers(updated); storage.saveUsers(updated);}} />} />
                     <Route path="/coupons" element={<AdminCoupons coupons={coupons} onUpdateCoupons={(updated) => {setCoupons(updated); storage.saveCoupons(updated);}} />} />
                     <Route path="/settings" element={<AdminSettings settings={paymentSettings} onUpdateSettings={(updated) => {setPaymentSettings(updated); storage.savePaymentSettings(updated);}} />} />
@@ -172,7 +217,7 @@ const App: React.FC = () => {
           path="*"
           element={
             <div className="flex flex-col min-h-screen">
-              <Header cartCount={cart.reduce((acc, item) => acc + item.quantity, 0)} user={currentUser} />
+              <Header cartCount={cart.reduce((acc, item) => acc + item.quantity, 0)} user={currentUser} onMarkAsRead={handleMarkAsRead} />
               
               <main className="flex-grow container mx-auto px-4 py-8">
                 <Routes>

@@ -1,18 +1,34 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User } from '../types';
+import { User, Notification } from '../types';
 import Logo from './Logo';
 
 interface Props {
   cartCount: number;
   user: User | null;
+  onMarkAsRead?: (notificationId: string) => void;
 }
 
-const Header: React.FC<Props> = ({ cartCount, user }) => {
+const Header: React.FC<Props> = ({ cartCount, user, onMarkAsRead }) => {
   const [search, setSearch] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const notifications = user?.notifications || [];
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +36,12 @@ const Header: React.FC<Props> = ({ cartCount, user }) => {
       navigate(`/books?q=${encodeURIComponent(search)}`);
       setIsMenuOpen(false);
     }
+  };
+
+  const handleNotifClick = (notif: Notification) => {
+    if (onMarkAsRead) onMarkAsRead(notif.id);
+    setIsNotifOpen(false);
+    navigate('/profile');
   };
 
   return (
@@ -62,6 +84,60 @@ const Header: React.FC<Props> = ({ cartCount, user }) => {
             </form>
 
             <nav className="flex items-center gap-2 md:gap-6">
+              {/* Notifications Bell */}
+              <div className="relative" ref={notifRef}>
+                <button 
+                  onClick={() => setIsNotifOpen(!isNotifOpen)}
+                  className={`relative p-1.5 transition-all ${isNotifOpen ? 'text-amber-600' : 'text-slate-600 hover:text-amber-600'}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-7 md:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-amber-500 text-white text-[8px] font-black w-3.5 h-3.5 md:w-5 md:h-5 flex items-center justify-center rounded-full border-2 border-white animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notifications Dropdown */}
+                {isNotifOpen && (
+                  <div className="absolute left-0 mt-4 w-[280px] md:w-[320px] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="p-4 bg-slate-50 border-b flex justify-between items-center">
+                      <h4 className="font-bold text-slate-800 text-sm">اعلان‌ها</h4>
+                      <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-black">{unreadCount} جدید</span>
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <p className="text-slate-400 text-xs">هیچ اعلانی ندارید.</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-slate-50">
+                          {[...notifications].reverse().map(notif => (
+                            <button 
+                              key={notif.id}
+                              onClick={() => handleNotifClick(notif)}
+                              className={`w-full text-right p-4 hover:bg-slate-50 transition-colors flex gap-3 items-start ${!notif.isRead ? 'bg-amber-50/30' : ''}`}
+                            >
+                              <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!notif.isRead ? 'bg-amber-500' : 'bg-slate-200'}`}></div>
+                              <div>
+                                <h5 className="font-bold text-slate-800 text-[11px] md:text-xs mb-1">{notif.title}</h5>
+                                <p className="text-slate-500 text-[10px] md:text-[11px] leading-relaxed line-clamp-2">{notif.message}</p>
+                                <span className="text-[9px] text-slate-300 mt-2 block">{new Date(notif.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 bg-slate-50 text-center border-t">
+                      <Link to="/profile" onClick={() => setIsNotifOpen(false)} className="text-[10px] font-bold text-amber-600 hover:underline">مشاهده همه در پروفایل</Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <Link to="/cart" className="relative p-1.5 text-slate-600 hover:text-amber-600 transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-7 md:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />

@@ -77,6 +77,16 @@ export interface Review {
   createdAt: string;
 }
 
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  isRead: boolean;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -88,6 +98,7 @@ export interface User {
   addresses?: Address[];
   favorites?: string[]; // array of book IDs
   reviews?: Review[];
+  notifications?: Notification[];
 }
 
 export interface Coupon {

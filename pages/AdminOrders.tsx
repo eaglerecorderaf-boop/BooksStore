@@ -6,25 +6,68 @@ import { formatPrice } from '../constants';
 interface Props {
   orders: Order[];
   onUpdateOrders: (orders: Order[]) => void;
+  onAddNotification: (userId: string, title: string, message: string, type: 'info' | 'success' | 'warning' | 'error') => void;
 }
 
-const AdminOrders: React.FC<Props> = ({ orders, onUpdateOrders }) => {
+const AdminOrders: React.FC<Props> = ({ orders, onUpdateOrders, onAddNotification }) => {
   const [selectedOrder, setSelectedOrder] = React.useState<Order | null>(null);
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
     onUpdateOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+
+    // Create notification for status change
+    let title = 'بروزرسانی وضعیت سفارش';
+    let message = `وضعیت سفارش #${orderId.slice(0, 8)} به "${newStatus}" تغییر یافت.`;
+    let type: 'info' | 'success' | 'warning' | 'error' = 'info';
+
+    if (newStatus === OrderStatus.DELIVERED) {
+      title = 'سفارش تحویل داده شد';
+      message = `سفارش شما با موفقیت تحویل داده شد. ممنون از اعتماد شما به کتابینو! امیدواریم از مطالعه کتاب‌های خود لذت ببرید.`;
+      type = 'success';
+    } else if (newStatus === OrderStatus.SHIPPED) {
+      title = 'سفارش ارسال شد';
+      message = `سفارش شما تحویل پست گردید و به زودی به دست شما خواهد رسید.`;
+      type = 'success';
+    }
+
+    onAddNotification(order.userId, title, message, type);
   };
 
   const handleApproveOrder = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
     onUpdateOrders(orders.map(o => o.id === orderId ? { ...o, status: OrderStatus.PROCESSING, adminNote: 'رسید تایید شد.' } : o));
+    
+    onAddNotification(
+      order.userId, 
+      'تایید پرداخت بانکی', 
+      `رسید پرداخت سفارش #${orderId.slice(0, 8)} توسط مدیریت تایید شد و سفارش شما وارد مرحله پردازش گردید.`,
+      'success'
+    );
+
     setSelectedOrder(null);
     alert('سفارش تایید شد و به مرحله پردازش رفت.');
   };
 
   const handleRejectOrder = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
     const reason = prompt('لطفاً دلیل رد سفارش را وارد کنید:', 'رسید نامعتبر یا فیک است.');
     if (reason) {
       onUpdateOrders(orders.map(o => o.id === orderId ? { ...o, status: OrderStatus.REJECTED, adminNote: reason } : o));
+      
+      onAddNotification(
+        order.userId, 
+        'رد پرداخت بانکی', 
+        `متاسفانه رسید پرداخت سفارش #${orderId.slice(0, 8)} رد شد. علت: ${reason}. لطفاً مجدداً بررسی نمایید.`,
+        'error'
+      );
+
       setSelectedOrder(null);
       alert('سفارش رد شد و به کاربر اطلاع داده می‌شود.');
     }

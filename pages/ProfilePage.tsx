@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, Order, Address, Review } from '../types';
+import { User, Order, Address, Review, Book, OrderStatus } from '../types';
 import { formatPrice } from '../constants';
 import { useNavigate, Link } from 'react-router-dom';
 import { storage } from '../services/storage';
@@ -13,7 +13,7 @@ interface Props {
   onUpdateUser: (user: User) => void;
 }
 
-type Tab = 'orders' | 'favorites' | 'addresses' | 'reviews' | 'security' | 'coupons' | 'edit';
+type Tab = 'orders' | 'notifications' | 'favorites' | 'addresses' | 'reviews' | 'security' | 'coupons' | 'edit';
 
 const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateUser }) => {
   const navigate = useNavigate();
@@ -154,6 +154,34 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
                       <p className="font-bold text-slate-900">مبلغ کل: {formatPrice(order.totalAmount)}</p>
                       <button className="text-amber-600 text-sm font-bold hover:underline">مشاهده جزئیات</button>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      case 'notifications':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-3">
+              <span>🔔</span> اعلان‌های من
+            </h2>
+            {(!user.notifications || user.notifications.length === 0) ? (
+              <div className="bg-white p-12 rounded-3xl text-center border border-slate-100 shadow-sm">
+                <p className="text-slate-400">شما هنوز هیچ اعلانی دریافت نکرده‌اید.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {[...user.notifications].reverse().map(notif => (
+                  <div key={notif.id} className={`bg-white p-6 rounded-3xl border shadow-sm transition-all ${!notif.isRead ? 'border-amber-200 bg-amber-50/10' : 'border-slate-100'}`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${notif.type === 'error' ? 'bg-red-500' : notif.type === 'success' ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+                        <h4 className="font-bold text-slate-800">{notif.title}</h4>
+                      </div>
+                      <span className="text-[10px] text-slate-400">{new Date(notif.createdAt).toLocaleDateString('fa-IR')} - {new Date(notif.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed pr-5">{notif.message}</p>
                   </div>
                 ))}
               </div>
@@ -456,6 +484,7 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
           <div className="bg-white rounded-3xl border border-slate-100 p-4 space-y-1 shadow-sm sticky top-24">
             {[
               { id: 'orders', icon: '📦', label: 'سفارشات من' },
+              { id: 'notifications', icon: '🔔', label: 'اعلان‌ها' },
               { id: 'favorites', icon: '❤️', label: 'علاقه‌مندی‌ها' },
               { id: 'addresses', icon: '📍', label: 'آدرس‌های من' },
               { id: 'reviews', icon: '💬', label: 'نظرات من' },
