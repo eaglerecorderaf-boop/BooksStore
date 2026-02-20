@@ -136,7 +136,7 @@ const AdminDashboard: React.FC<Props> = ({ orders, books }) => {
                     <tr key={order.id} className="border-b border-slate-50 last:border-0">
                       <td className="py-4 font-mono">#{order.id.slice(0, 8)}</td>
                       <td className="py-4 font-bold">{order.shippingAddress.fullName}</td>
-                      <td className="py-4 text-slate-500">{new Date(order.createdAt).toLocaleDateString('fa-IR')}</td>
+                      <td className="py-4 text-slate-500">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('fa-IR') : '---'}</td>
                       <td className="py-4 font-bold">{formatPrice(order.totalAmount)}</td>
                       <td className="py-4">
                         <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-bold">

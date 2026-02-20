@@ -180,7 +180,7 @@ const AdminOrders: React.FC<Props> = ({ orders, onUpdateOrders, onAddNotificatio
               </div>
               <div className="text-left" dir="ltr">
                 <p className="font-bold">Order ID: #{selectedOrder.id.slice(0, 8)}</p>
-                <p className="text-sm text-slate-500">{new Date(selectedOrder.createdAt).toLocaleDateString('fa-IR')}</p>
+                <p className="text-sm text-slate-500">{selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString('fa-IR') : '---'}</p>
               </div>
             </div>
 

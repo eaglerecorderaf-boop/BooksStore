@@ -119,7 +119,7 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
                     <div className="flex justify-between items-start mb-6">
                       <div>
                         <p className="text-xs text-slate-400 mb-1">شماره سفارش: <span className="font-mono text-slate-800">#{order.id.slice(0, 8)}</span></p>
-                        <p className="text-xs text-slate-400">تاریخ: {new Date(order.createdAt).toLocaleDateString('fa-IR')}</p>
+                        <p className="text-xs text-slate-400">تاریخ: {order.createdAt ? new Date(order.createdAt).toLocaleDateString('fa-IR') : '---'}</p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
@@ -179,7 +179,7 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
                         <div className={`w-2 h-2 rounded-full ${notif.type === 'error' ? 'bg-red-500' : notif.type === 'success' ? 'bg-green-500' : 'bg-amber-500'}`}></div>
                         <h4 className="font-bold text-slate-800">{notif.title}</h4>
                       </div>
-                      <span className="text-[10px] text-slate-400">{new Date(notif.createdAt).toLocaleDateString('fa-IR')} - {new Date(notif.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="text-[10px] text-slate-400">{notif.createdAt ? `${new Date(notif.createdAt).toLocaleDateString('fa-IR')} - ${new Date(notif.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}` : '---'}</span>
                     </div>
                     <p className="text-sm text-slate-600 leading-relaxed pr-5">{notif.message}</p>
                   </div>
@@ -356,7 +356,7 @@ const ProfilePage: React.FC<Props> = ({ user, orders, books, onLogout, onUpdateU
                       {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                     </div>
                     <p className="text-sm text-slate-600 leading-relaxed">{review.comment}</p>
-                    <p className="text-[10px] text-slate-400 mt-4">{new Date(review.createdAt).toLocaleDateString('fa-IR')}</p>
+                    <p className="text-[10px] text-slate-400 mt-4">{review.createdAt ? new Date(review.createdAt).toLocaleDateString('fa-IR') : '---'}</p>
                   </div>
                 ))}
               </div>

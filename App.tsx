@@ -52,13 +52,44 @@ const App: React.FC = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        
+        // Fetch each resource individually to handle partial failures
+        const fetchBooks = supabaseService.getBooks().catch(err => {
+          console.error('Error fetching books:', err);
+          return [];
+        });
+        const fetchCategories = supabaseService.getCategories().catch(err => {
+          console.error('Error fetching categories:', err);
+          return storage.getCategories();
+        });
+        const fetchOrders = supabaseService.getOrders().catch(err => {
+          console.error('Error fetching orders:', err);
+          return [];
+        });
+        const fetchUsers = supabaseService.getUsers().catch(err => {
+          console.error('Error fetching users:', err);
+          return [];
+        });
+        const fetchCoupons = supabaseService.getCoupons().catch(err => {
+          console.error('Error fetching coupons:', err);
+          return [];
+        });
+        const fetchSettings = supabaseService.getPaymentSettings().catch(err => {
+          console.error('Error fetching settings:', err);
+          return {
+            cardNumber: '۶۰۳۷ - ۹۹۷۵ - ۱۲۳۴ - ۵۶۷۸',
+            accountHolder: 'مدیریت فروشگاه کتابینو',
+            bankName: 'بانک ملی ایران'
+          };
+        });
+
         const [dbBooks, dbCategories, dbOrders, dbUsers, dbCoupons, dbSettings] = await Promise.all([
-          supabaseService.getBooks(),
-          supabaseService.getCategories(),
-          supabaseService.getOrders(),
-          supabaseService.getUsers(),
-          supabaseService.getCoupons(),
-          supabaseService.getPaymentSettings()
+          fetchBooks,
+          fetchCategories,
+          fetchOrders,
+          fetchUsers,
+          fetchCoupons,
+          fetchSettings
         ]);
 
         setBooks(dbBooks);
@@ -67,7 +98,7 @@ const App: React.FC = () => {
         setCoupons(dbCoupons);
         setPaymentSettings(dbSettings);
       } catch (error) {
-        console.error('Error fetching data from Supabase:', error);
+        console.error('Critical error in fetchData:', error);
       } finally {
         setIsLoading(false);
       }

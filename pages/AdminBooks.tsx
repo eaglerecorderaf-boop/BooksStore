@@ -27,13 +27,18 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
       author: formData.get('author') as string,
       translator: formData.get('translator') as string,
       publisher: formData.get('publisher') as string,
+      isbn: formData.get('isbn') as string,
+      publishDate: formData.get('publishDate') as string,
       price: Number(formData.get('price')),
       discount: Number(formData.get('discount')),
       stock: Number(formData.get('stock')),
+      pages: Number(formData.get('pages')),
+      language: formData.get('language') as string,
       category: formData.get('category') as string,
       description: formData.get('description') as string,
       image: formData.get('image') as string,
       rating: Number(formData.get('rating')),
+      isFeatured: formData.get('isFeatured') === 'on',
       slug: (formData.get('title') as string).replace(/\s+/g, '-').toLowerCase(),
     };
 
@@ -43,10 +48,6 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
       const newBook: Book = {
         ...bookData as Book,
         id: Math.random().toString(36).substr(2, 9),
-        isbn: 'N/A',
-        publishDate: new Date().toLocaleDateString('fa-IR'),
-        pages: 0,
-        language: 'فارسی',
       };
       onUpdateBooks([newBook, ...books]);
     }
@@ -150,6 +151,16 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
                     <label className="block text-xs text-slate-400 mb-1">ناشر</label>
                     <input name="publisher" defaultValue={editingBook?.publisher} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">شابک (ISBN)</label>
+                      <input name="isbn" defaultValue={editingBook?.isbn} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">تاریخ انتشار</label>
+                      <input name="publishDate" defaultValue={editingBook?.publishDate || new Date().toLocaleDateString('fa-IR')} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                  </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">URL تصویر پوستر</label>
                     <input name="image" defaultValue={editingBook?.image} required placeholder="https://..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none text-left" dir="ltr" />
@@ -169,6 +180,16 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
+                      <label className="block text-xs text-slate-400 mb-1">تعداد صفحات</label>
+                      <input name="pages" type="number" defaultValue={editingBook?.pages} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">زبان کتاب</label>
+                      <input name="language" defaultValue={editingBook?.language || 'فارسی'} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <label className="block text-xs text-slate-400 mb-1">موجودی</label>
                       <input name="stock" type="number" defaultValue={editingBook?.stock} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
                     </div>
@@ -176,6 +197,16 @@ const AdminBooks: React.FC<Props> = ({ books, categories, onUpdateBooks }) => {
                       <label className="block text-xs text-slate-400 mb-1">امتیاز (۰ تا ۵)</label>
                       <input name="rating" type="number" step="0.1" min="0" max="5" defaultValue={editingBook?.rating} required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3 bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                    <input 
+                      type="checkbox" 
+                      name="isFeatured" 
+                      id="isFeatured"
+                      defaultChecked={editingBook?.isFeatured}
+                      className="w-5 h-5 accent-indigo-600" 
+                    />
+                    <label htmlFor="isFeatured" className="text-sm font-bold text-indigo-900 cursor-pointer">نمایش در اسلایدر صفحه اصلی</label>
                   </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">دسته‌بندی</label>

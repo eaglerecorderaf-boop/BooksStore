@@ -27,6 +27,7 @@ export interface Book {
   pages: number;
   language: string;
   rating: number;
+  isFeatured?: boolean;
   slug: string;
 }
 

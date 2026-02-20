@@ -14,7 +14,12 @@ const HomePage: React.FC<Props> = ({ books, categories }) => {
   const bestSellersRef = useRef<HTMLDivElement>(null);
   
   const [currentSlide, setCurrentSlide] = useState(0);
-  const popularBooks = books.filter(b => b.rating >= 4.7).slice(0, 5);
+  const popularBooks = useMemo(() => {
+    const featured = books.filter(b => b.isFeatured);
+    if (featured.length > 0) return featured.slice(0, 5);
+    // Fallback to high rating if no books are marked as featured
+    return books.filter(b => b.rating >= 4.7).slice(0, 5);
+  }, [books]);
 
   useEffect(() => {
     if (popularBooks.length === 0) return;
