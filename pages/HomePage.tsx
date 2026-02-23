@@ -154,27 +154,50 @@ const HomePage: React.FC<Props> = ({ books, categories }) => {
 export const BookCard: React.FC<{ book: Book }> = ({ book }) => {
   const discountedPrice = book.price * (1 - book.discount / 100);
   return (
-    <div className="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-full text-right transition-all hover:shadow-md">
-      <Link to={`/book/${book.slug}`} className="relative block aspect-[3/4.2]">
-        <img src={book.image} alt={book.title} className="w-full h-full object-cover" />
-        {book.discount > 0 && (
-          <div className="absolute top-1.5 right-1.5 bg-red-600 text-white text-[8px] md:text-[11px] font-black px-1.5 py-0.5 rounded shadow-md z-10">{book.discount}٪</div>
-        )}
+    <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-full text-right transition-all hover:shadow-md relative group">
+      {/* Ribbon */}
+      {book.discount > 0 && (
+        <div className="absolute top-5 -right-9 bg-[#ff4d4f] text-white text-[10px] md:text-xs font-bold px-10 py-1.5 rotate-45 z-20 shadow-sm">
+          پیشنهاد ویژه
+        </div>
+      )}
+      
+      <Link to={`/book/${book.slug}`} className="relative block aspect-[3/4] p-4 md:p-6 bg-white flex items-center justify-center">
+        <img src={book.image} alt={book.title} className="max-w-full max-h-full object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300" />
       </Link>
-      <div className="p-2.5 md:p-8 flex flex-col flex-grow bg-white">
-        <Link to={`/book/${book.slug}`} className="font-black text-slate-900 mb-0.5 line-clamp-1 text-[11px] md:text-xl">{book.title}</Link>
-        <p className="text-[9px] md:text-sm text-slate-400 mb-3 font-medium line-clamp-1">{book.author}</p>
-        <div className="mt-auto flex items-center justify-between gap-1 flex-row-reverse">
-          <span className="text-[11px] md:text-2xl font-black text-slate-900">{formatPrice(discountedPrice)}</span>
-          <button className="w-6 h-6 md:w-14 md:h-14 bg-slate-900 rounded-lg flex items-center justify-center text-white active:bg-amber-500 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 md:h-7 md:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+      
+      <div className="px-4 md:px-6 pb-4 flex flex-col flex-grow bg-white">
+        <Link to={`/book/${book.slug}`} className="font-bold text-slate-800 mb-1 line-clamp-1 text-sm md:text-lg">{book.title}</Link>
+        <p className="text-xs md:text-sm text-slate-500 mb-4 font-medium line-clamp-1">{book.author}</p>
+        
+        <div className="mt-auto pt-3 border-t border-slate-100 flex items-start justify-between">
+          {/* Discount Badge (Right side in RTL) */}
+          {book.discount > 0 ? (
+            <div className="bg-[#ff4d4f] text-white text-[11px] md:text-sm font-bold px-2.5 py-0.5 rounded-full mt-0.5">
+              ٪{book.discount.toLocaleString('fa-IR')}
+            </div>
+          ) : (
+            <div></div>
+          )}
+
+          {/* Price Section (Left side in RTL) */}
+          <div className="flex flex-col items-end">
+            {book.discount > 0 ? (
+              <span className="text-[11px] md:text-sm text-slate-400 line-through mb-1">{book.price.toLocaleString('fa-IR')}</span>
+            ) : (
+              <span className="h-4 md:h-5 mb-1"></span> // Placeholder to keep height consistent
+            )}
+            <div className="flex items-center gap-1.5 flex-row-reverse">
+              <span className="text-sm md:text-xl font-black text-indigo-900">{discountedPrice.toLocaleString('fa-IR')}</span>
+              <span className="text-[10px] md:text-xs text-indigo-900 font-bold">تومان</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+
 
 export default HomePage;
