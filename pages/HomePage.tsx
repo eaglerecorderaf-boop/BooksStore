@@ -156,7 +156,7 @@ export const BookCard: React.FC<{ book: Book }> = ({ book }) => {
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col h-full text-right transition-all hover:shadow-md relative group">
       {/* Ribbon */}
-      {book.discount > 0 && (
+      {book.isFeatured && (
         <div className="absolute top-5 -right-9 bg-[#ff4d4f] text-white text-[10px] md:text-xs font-bold px-10 py-1.5 rotate-45 z-20 shadow-sm">
           پیشنهاد ویژه
         </div>
